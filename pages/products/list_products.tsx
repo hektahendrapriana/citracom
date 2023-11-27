@@ -82,6 +82,8 @@ const ListProducts = () => {
     alamat: '',
     email: ''
   }
+  const [foto, setFoto] = useState(null);
+  const [createObjectURL, setCreateObjectURL] = useState(null);
   const [page, setPage] = useState('product');
   const [open, setOpen] = useState(false);
   const [openSuplier, setOpenSuplier] = useState(false);
@@ -180,6 +182,7 @@ const ListProducts = () => {
         "Content-Type": "application/json",
       },
     }).then((resp) => {
+      setDetails(null)
       if( page === 'product' )
       {
         getListProduct();
@@ -196,53 +199,76 @@ const ListProducts = () => {
     event.preventDefault()
     const API_PATH = page === 'product' ? 'products' : 'supliers';
     var formBody = new FormData(event.currentTarget)
+    // formBody.append("foto", foto); 
     var formObject = Object.fromEntries(formBody.entries());
     console.log(formBody);
     if( details === null )
-    {  
-      fetch(`${API_URL}/api/${API_PATH}`, {
-        method: 'POST',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formObject),
-      }).then((resp) => {
-        if(page === 'product')
-        {
+    { 
+      if(page === 'product')
+      {
+        fetch(`${API_URL}/api/${API_PATH}`, {
+          method: 'POST',
+          body: formBody,
+        }).then((resp) => {
+          setCreateObjectURL(null)
+          setFoto(null)
+          setDetails(null)
           setFormData(productData);
           setOpen(false);
           getListProduct();
-        }
-        else
-        {
+        });
+      }
+      else
+      {
+        fetch(`${API_URL}/api/${API_PATH}`, {
+          method: 'POST',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: formBody,
+        }).then((resp) => {
+          setCreateObjectURL(null)
+          setFoto(null)
+          setDetails(null)
           setFormData(suplierData);
           setOpenSuplier(false);
           getSuppliers();
-        }
-      });
+        });
+      }
+      
     }
     else{ 
-      const id_data = page === 'product' ? details.id : details.id_suplier;
-      fetch(`${API_URL}/api/${API_PATH}?id=${id_data}`, {
-        method: 'PATCH',
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formObject),
-      }).then((resp) => {
-        if(page === 'product')
-        {
+      if(page === 'product')
+      {
+        fetch(`${API_URL}/api/${API_PATH}?id=${details.id}`, {
+          method: 'PATCH',
+          body: formBody,
+        }).then((resp) => {  
+          setCreateObjectURL(null)
+          setFoto(null)
+          setDetails(null)
           setFormData(productData);
           setOpen(false);
           getListProduct();
-        }
-        else
-        {
+        });
+      }
+      else
+      {
+        fetch(`${API_URL}/api/${API_PATH}?id=${details.id_suplier}`, {
+          method: 'PATCH',
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formObject),
+        }).then((resp) => {
+          setCreateObjectURL(null)
+          setFoto(null)
+          setDetails(null)
           setFormData(suplierData);
           setOpenSuplier(false);
           getSuppliers();
-        }
-      });
+        });
+      }
     }
  
   }
@@ -252,6 +278,8 @@ const ListProducts = () => {
   }
 
   const handleClickOpen = () => {
+    setCreateObjectURL(null)
+    setFoto(null)
     page === 'product' ? setOpen(true) : setOpenSuplier(true);
   }
 
@@ -260,6 +288,8 @@ const ListProducts = () => {
   }
 
   const handleClose = () => {
+    setCreateObjectURL(null)
+    setFoto(null)
     setOpen(false);
     setOpenSuplier(false);
     setDetails(null)
@@ -278,6 +308,19 @@ const ListProducts = () => {
     const value = e.target.value;
     setFormData({...formData, [key]: value})
   }
+
+  const handleUploadImage = (event) => {
+    if (event.target.files && event.target.files[0]) {
+      const i = event.target.files[0];
+      console.log('foto', i)
+      console.log('foto', i.name)
+      
+      const key = 'foto';
+      setFormData({...formData, [key]: i.name})
+      setFoto(i);
+      setCreateObjectURL(URL.createObjectURL(i));
+    }
+  };
 
   return (
     <Container maxWidth="lg">
@@ -374,7 +417,7 @@ const ListProducts = () => {
           {details === null ? 'Tambah' : 'Ubah'} Produk
         </DialogTitle>
         <DialogContent>
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} enctype="multipart/form-data">
             <Grid container spacing={2}>
               <Grid xs={12}>
                 <FormControl fullWidth sx={{m:1}}>
@@ -481,8 +524,9 @@ const ListProducts = () => {
             <Grid container spacing={2}>
               <Grid xs={12}>
                 <FormControl fullWidth sx={{m:1}}>
-                  <input type="hidden" name="foto" value="product2.jpg"/>
-                  <input type="file" accept="image/*" name="file"/>
+                  {/* <input type="hidden" name="foto" value="product2.jpg"/> */}
+                  <img src={createObjectURL} width="100" />
+                  <input type="file" name="upload" onChange={handleUploadImage} />
                 </FormControl>
               </Grid>
             </Grid>

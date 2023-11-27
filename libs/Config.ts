@@ -3,7 +3,7 @@ export default {
       return {
         BASE_URL: "http://localhost:3000",
         UPLOAD_URL: "http://localhost:3000/uploads/products/",
-        UPLOAD_PATH: "../uploads/products/",
+        UPLOAD_PATH: "./public/uploads/products/",
         DbFileName: "./test.db",
       }
     },

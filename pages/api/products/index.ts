@@ -3,7 +3,10 @@ const sqlite3= require('sqlite3');
 import type { NextApiRequest, NextApiResponse } from 'next'
 import Config from '@/libs/Config';
 import {open} from 'sqlite';
+import { IncomingForm } from 'formidable'
+import { promises as fs } from 'fs'
 
+var mv = require('mv');
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,14 +31,16 @@ type ResponseData = {
 
 export const config = {
   api: {
-    bodyParser: {
-      sizeLimit: '500kb',
-    },
+    // bodyParser: {
+    //   sizeLimit: '2mb',
+    // },
+    bodyParser: false,
   },
 }
 
 export default async function handler( req: NextApiRequest, res: NextApiResponse ){
   var dbFile = Config.get_config().DbFileName;
+  var UPLOAD_PATH = Config.get_config().UPLOAD_PATH;
   const query = req.query;
   const body = req.body
 
@@ -45,16 +50,44 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
     'Access-Control-Allow-Headers',
     'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
   )
-  
-  const payloadBody = {
-    nama: body.nama,
-    deskripsi: body.deskripsi,
-    harga: body.harga,
-    stok: body.stok,
-    foto: body.foto,
-    suplier_id: body.suplier_id
+  const data = await new Promise((resolve, reject) => {
+    const form = new IncomingForm();
+
+    form.parse(req, (err, fields, files) => {
+      if (err) reject({ err })
+      resolve({ err, fields, files })
+    }) 
+  })
+  var fields = {};
+  var detailFiles = {};
+  var payloadBody = {};
+  console.log('data', data);
+  console.log('fields', typeof data.fields.name);
+  if( typeof data.files.upload != 'undefined' )
+  {
+    console.log('dsd')
+    fields = data.fields;
+    detailFiles = await data.files.upload[0];
+    console.log('detailFiles', detailFiles.originalFilename)
+    payloadBody = {
+      nama: fields.nama[0],
+      deskripsi: fields.deskripsi[0],
+      harga: fields.harga[0],
+      stok: fields.stok[0],
+      foto: detailFiles.originalFilename,
+      suplier_id: fields.suplier_id[0]
+    }
   }
 
+  // const payloadBody = {
+  //   nama: body.nama,
+  //   deskripsi: body.deskripsi,
+  //   harga: body.harga,
+  //   stok: body.stok,
+  //   foto: body.foto,
+  //   suplier_id: body.suplier_id
+  // }
+  
   console.log('payloadBody', payloadBody)
   const db = await open(
     {filename: dbFile , driver: sqlite3.Database}
@@ -81,31 +114,53 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
         break;
   
       case 'POST':
+        var oldPath = detailFiles.filepath;
+        var newPath = `${UPLOAD_PATH}${detailFiles.originalFilename}`;
+        mv(oldPath, newPath, function() {
+        });
         await db.run("INSERT INTO produk (nama, deskripsi, harga, stok, foto, suplier_id) VALUES (?,?,?,?,?,?)", 
-          body.nama, 
-          body.deskripsi, 
-          body.harga, 
-          body.stok, 
-          body.foto, 
-          body.suplier_id
+          fields.nama[0], 
+          fields.deskripsi[0], 
+          fields.harga[0], 
+          fields.stok[0], 
+          detailFiles.originalFilename, 
+          fields.suplier_id[0]
         );
+        // await db.run("INSERT INTO produk (nama, deskripsi, harga, stok, foto, suplier_id) VALUES (?,?,?,?,?,?)", 
+        //   body.nama, 
+        //   body.deskripsi, 
+        //   body.harga, 
+        //   body.stok, 
+        //   body.foto, 
+        //   body.suplier_id
+        // );
         res.status(201).json({
           code: 201,
           message: "Successful Add Product",
           data: payloadBody,
         })
+        
         break;
 
         case 'PATCH':
           await db.run("UPDATE produk SET nama=?, deskripsi=?, harga=?, stok=?, foto=?, suplier_id=? WHERE id = ?", 
-            body.nama, 
-            body.deskripsi, 
-            body.harga, 
-            body.stok, 
-            body.foto, 
-            body.suplier_id, 
+            fields.nama[0], 
+            fields.deskripsi[0], 
+            fields.harga[0], 
+            fields.stok[0], 
+            detailFiles.originalFilename, 
+            fields.suplier_id[0], 
             query.id
           );
+          // await db.run("UPDATE produk SET nama=?, deskripsi=?, harga=?, stok=?, foto=?, suplier_id=? WHERE id = ?", 
+          //   body.nama, 
+          //   body.deskripsi, 
+          //   body.harga, 
+          //   body.stok, 
+          //   body.foto, 
+          //   body.suplier_id, 
+          //   query.id
+          // );
 
           res.status(201).json({
             code: 201,
