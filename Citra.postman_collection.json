@@ -15,13 +15,39 @@
 						"method": "POST",
 						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"nama\": \"produk baru\",\r\n  \"deskripsi\": \"test\",\r\n  \"harga\": 300000,\r\n  \"stok\": 5,\r\n  \"foto\": \"images2.jpg\",\r\n  \"suplier_id\": 1\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "nama",
+									"value": "Product 6",
+									"type": "text"
+								},
+								{
+									"key": "deskripsi",
+									"value": "test",
+									"type": "text"
+								},
+								{
+									"key": "harga",
+									"value": "45000",
+									"type": "text"
+								},
+								{
+									"key": "stok",
+									"value": "20",
+									"type": "text"
+								},
+								{
+									"key": "suplier_id",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "foto",
+									"type": "file",
+									"src": "/C:/product5.jpg"
 								}
-							}
+							]
 						},
 						"url": {
 							"raw": "localhost:3000/api/products/",
@@ -90,16 +116,42 @@
 						"method": "PATCH",
 						"header": [],
 						"body": {
-							"mode": "raw",
-							"raw": "{\r\n  \"nama\": \"produk baru\",\r\n  \"deskripsi\": \"test\",\r\n  \"harga\": 300000,\r\n  \"stok\": 5,\r\n  \"foto\": \"images2.jpg\",\r\n  \"suplier_id\": 1\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "nama",
+									"value": "Product 6",
+									"type": "text"
+								},
+								{
+									"key": "deskripsi",
+									"value": "test",
+									"type": "text"
+								},
+								{
+									"key": "harga",
+									"value": "45000",
+									"type": "text"
+								},
+								{
+									"key": "stok",
+									"value": "20",
+									"type": "text"
+								},
+								{
+									"key": "suplier_id",
+									"value": "2",
+									"type": "text"
+								},
+								{
+									"key": "foto",
+									"type": "file",
+									"src": "/C:/product5.jpg"
 								}
-							}
+							]
 						},
 						"url": {
-							"raw": "localhost:3000/api/products/?id=2",
+							"raw": "localhost:3000/api/products/?id=4",
 							"host": [
 								"localhost"
 							],
@@ -112,7 +164,7 @@
 							"query": [
 								{
 									"key": "id",
-									"value": "2"
+									"value": "4"
 								}
 							]
 						}
