@@ -526,7 +526,7 @@ const ListProducts = () => {
                 <FormControl fullWidth sx={{m:1}}>
                   {/* <input type="hidden" name="foto" value="product2.jpg"/> */}
                   <img src={createObjectURL} width="100" />
-                  <input type="file" name="upload" onChange={handleUploadImage} />
+                  <input type="file" name="upload" onChange={handleUploadImage} accept=".jpg, .png, .jpeg"/>
                 </FormControl>
               </Grid>
             </Grid>
