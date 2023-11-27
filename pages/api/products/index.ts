@@ -41,6 +41,7 @@ export const config = {
 export default async function handler( req: NextApiRequest, res: NextApiResponse ){
   var dbFile = Config.get_config().DbFileName;
   var UPLOAD_PATH = Config.get_config().UPLOAD_PATH;
+  var limitedFile = Config.get_config().limitedFile;
   const query = req.query;
   const body = req.body
 
@@ -114,59 +115,79 @@ export default async function handler( req: NextApiRequest, res: NextApiResponse
         break;
   
       case 'POST':
-        var oldPath = detailFiles.filepath;
-        var newPath = `${UPLOAD_PATH}${detailFiles.originalFilename}`;
-        mv(oldPath, newPath, function() {
-        });
-        await db.run("INSERT INTO produk (nama, deskripsi, harga, stok, foto, suplier_id) VALUES (?,?,?,?,?,?)", 
-          fields.nama[0], 
-          fields.deskripsi[0], 
-          fields.harga[0], 
-          fields.stok[0], 
-          detailFiles.originalFilename, 
-          fields.suplier_id[0]
-        );
-        // await db.run("INSERT INTO produk (nama, deskripsi, harga, stok, foto, suplier_id) VALUES (?,?,?,?,?,?)", 
-        //   body.nama, 
-        //   body.deskripsi, 
-        //   body.harga, 
-        //   body.stok, 
-        //   body.foto, 
-        //   body.suplier_id
-        // );
-        res.status(201).json({
-          code: 201,
-          message: "Successful Add Product",
-          data: payloadBody,
-        })
-        
-        break;
-
-        case 'PATCH':
-          await db.run("UPDATE produk SET nama=?, deskripsi=?, harga=?, stok=?, foto=?, suplier_id=? WHERE id = ?", 
+        if( detailFiles.size <= limitedFile )
+        {
+          var oldPath = detailFiles.filepath;
+          var newPath = `${UPLOAD_PATH}${detailFiles.originalFilename}`;
+          mv(oldPath, newPath, function() {
+          });
+          await db.run("INSERT INTO produk (nama, deskripsi, harga, stok, foto, suplier_id) VALUES (?,?,?,?,?,?)", 
             fields.nama[0], 
             fields.deskripsi[0], 
             fields.harga[0], 
             fields.stok[0], 
             detailFiles.originalFilename, 
-            fields.suplier_id[0], 
-            query.id
+            fields.suplier_id[0]
           );
-          // await db.run("UPDATE produk SET nama=?, deskripsi=?, harga=?, stok=?, foto=?, suplier_id=? WHERE id = ?", 
+          // await db.run("INSERT INTO produk (nama, deskripsi, harga, stok, foto, suplier_id) VALUES (?,?,?,?,?,?)", 
           //   body.nama, 
           //   body.deskripsi, 
           //   body.harga, 
           //   body.stok, 
           //   body.foto, 
-          //   body.suplier_id, 
-          //   query.id
+          //   body.suplier_id
           // );
-
           res.status(201).json({
             code: 201,
-            message: "Successful Update Product",
+            message: "Successful Add Product",
             data: payloadBody,
           })
+        }
+        else{
+          res.status(405).json({
+            code: 405,
+            message: "Foto tidak boleh lebih besar dari 2MB",
+            data: payloadBody,
+          })
+        }
+        
+        break;
+
+        case 'PATCH':
+          if( detailFiles.size <= limitedFile )
+          {
+            await db.run("UPDATE produk SET nama=?, deskripsi=?, harga=?, stok=?, foto=?, suplier_id=? WHERE id = ?", 
+              fields.nama[0], 
+              fields.deskripsi[0], 
+              fields.harga[0], 
+              fields.stok[0], 
+              detailFiles.originalFilename, 
+              fields.suplier_id[0], 
+              query.id
+            );
+            // await db.run("UPDATE produk SET nama=?, deskripsi=?, harga=?, stok=?, foto=?, suplier_id=? WHERE id = ?", 
+            //   body.nama, 
+            //   body.deskripsi, 
+            //   body.harga, 
+            //   body.stok, 
+            //   body.foto, 
+            //   body.suplier_id, 
+            //   query.id
+            // );
+
+            res.status(201).json({
+              code: 201,
+              message: "Successful Update Product",
+              data: payloadBody,
+            })
+          }
+          else{
+            res.status(405).json({
+              code: 405,
+              message: "Foto tidak boleh lebih besar dari 2MB",
+              data: payloadBody,
+            })
+          }
           break;
 
         case 'DELETE':

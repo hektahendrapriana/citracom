@@ -5,6 +5,7 @@ export default {
         UPLOAD_URL: "http://localhost:3000/uploads/products/",
         UPLOAD_PATH: "./public/uploads/products/",
         DbFileName: "./test.db",
+        limitedFile: 2097152
       }
     },
 }
